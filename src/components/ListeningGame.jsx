@@ -1,83 +1,101 @@
 import { useState, useEffect } from "react";
-import { wordThemes, getRandomWords } from "../data/words";
 
-function ListeningGame({ theme, onComplete, onBack }) {
+function ListeningGame({ theme, onComplete, onBack, getRandomWords }) {
   const [words, setWords] = useState([]);
   const [index, setIndex] = useState(0);
   const [options, setOptions] = useState([]);
-  const [score, setScore] = useState(0);
+  const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
-    setWords(getRandomWords(10, theme));
-  }, [theme]);
+    if (getRandomWords) {
+      setWords(getRandomWords(10, theme));
+    }
+  }, [theme, getRandomWords]);
 
   useEffect(() => {
-    if (words[index]) {
-      const allWords = wordThemes[theme].words;
-      const wrong = allWords.filter(w => w.word !== words[index].word).sort(() => Math.random() - 0.5).slice(0, 3);
-      setOptions([...wrong, words[index]].sort(() => Math.random() - 0.5));
-      speak(words[index].word);
+    if (words.length > 0 && words[index]) {
+      const correct = words[index];
+      const others = words.filter((w) => w.word !== correct.word);
+      const wrongOptions = others.sort(() => Math.random() - 0.5).slice(0, 3);
+      setOptions([...wrongOptions, correct].sort(() => Math.random() - 0.5));
     }
   }, [words, index]);
 
-  const speak = (text) => {
-    if ("speechSynthesis" in window) {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US";
-      u.rate = 0.8;
-      speechSynthesis.speak(u);
+  const playWord = () => {
+    if (words[index]) {
+      const utterance = new SpeechSynthesisUtterance(words[index].word);
+      utterance.lang = "en-US";
+      utterance.rate = 0.8;
+      speechSynthesis.speak(utterance);
     }
   };
 
-  const current = words[index];
-  if (!current) return <div className="text-white text-center text-2xl">加载中...</div>;
+  useEffect(() => {
+    if (words[index]) playWord();
+  }, [words, index]);
 
-  const handleAnswer = (opt) => {
-    if (opt.word === current.word) {
+  const handleSelect = (option) => {
+    setSelected(option);
+    if (option.word === words[index].word) {
       setResult("correct");
       setScore(score + 15);
       setTimeout(() => {
         setResult(null);
+        setSelected(null);
         if (index + 1 < words.length) setIndex(index + 1);
         else onComplete(score + 15, Math.floor(score / 20));
       }, 1000);
     } else {
       setResult("wrong");
-      setTimeout(() => setResult(null), 1000);
+      setTimeout(() => {
+        setResult(null);
+        setSelected(null);
+      }, 1000);
     }
   };
+
+  if (!words[index]) return <div className="text-white text-center text-2xl">Loading...</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">← 返回</button>
-        <div className="text-white font-bold text-xl">👂 {score} 分</div>
-        <div className="text-white/80">第 {index + 1}/{words.length} 题</div>
+        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">Back</button>
+        <div className="text-white font-bold text-xl">Score: {score}</div>
+        <div className="text-white/80">Word {index + 1}/{words.length}</div>
       </div>
 
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white">👂 听音选词</h1>
+        <h1 className="text-3xl font-bold text-white">Listening Game</h1>
+        <p className="text-white/80">Listen and select the correct word</p>
       </div>
 
-      <div className="card text-center">
-        <button onClick={() => speak(current.word)}
-          className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-white text-6xl shadow-xl hover:scale-110 transition-all animate-pulse mx-auto">
+      <div className="card text-center py-8">
+        <button onClick={playWord} className="text-6xl animate-pulse hover:scale-110 transition-transform">
           🔊
         </button>
-        <p className="text-gray-500 mt-4">点击播放发音</p>
+        <p className="text-gray-500 mt-4">Click to play pronunciation</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {options.map((opt, i) => (
-          <button key={i} onClick={() => handleAnswer(opt)} disabled={result !== null}
-            className={"card p-6 text-center hover:scale-105 transition-all " +
-              (result === "correct" && opt.word === current.word ? "bg-green-400 text-white" :
-               result === "wrong" && opt.word === current.word ? "bg-green-400 text-white" :
-               "bg-white")}>
-            <div className="text-4xl mb-2">{opt.emoji}</div>
-            <div className="font-bold text-lg">{opt.word}</div>
-            <div className="text-gray-500 text-sm">{opt.chinese}</div>
+        {options.map((option, i) => (
+          <button
+            key={i}
+            onClick={() => handleSelect(option)}
+            disabled={selected !== null}
+            className={
+              "card p-6 text-center font-bold text-xl transition-all " +
+              (selected?.word === option.word
+                ? result === "correct"
+                  ? "bg-green-400 text-white"
+                  : result === "wrong"
+                  ? "bg-red-400 text-white"
+                  : "bg-purple-200"
+                : "hover:bg-purple-100")
+            }
+          >
+            {option.word}
           </button>
         ))}
       </div>

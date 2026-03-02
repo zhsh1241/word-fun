@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { wordThemes, getRandomWords } from "../data/words";
 
-function MatchingGame({ theme, onComplete, onBack }) {
+function MatchingGame({ theme, onComplete, onBack, getRandomWords }) {
   const [words, setWords] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
   const [selectedEmoji, setSelectedEmoji] = useState(null);
@@ -10,8 +9,10 @@ function MatchingGame({ theme, onComplete, onBack }) {
   const [combo, setCombo] = useState(0);
 
   useEffect(() => {
-    setWords(getRandomWords(6, theme));
-  }, [theme]);
+    if (getRandomWords) {
+      setWords(getRandomWords(6, theme));
+    }
+  }, [theme, getRandomWords]);
 
   const handleWord = (w) => {
     if (matched.includes(w.word)) return;
@@ -43,23 +44,23 @@ function MatchingGame({ theme, onComplete, onBack }) {
     }
   };
 
-  if (!words.length) return <div className="text-white text-center text-2xl">加载中...</div>;
+  if (!words.length) return <div className="text-white text-center text-2xl">Loading...</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">← 返回</button>
-        <div className="text-white font-bold text-xl">🎯 {score} 分</div>
-        {combo > 1 && <div className="text-yellow-300 font-bold animate-pulse">🔥 {combo}x</div>}
+        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">Back</button>
+        <div className="text-white font-bold text-xl">Score: {score}</div>
+        {combo > 1 && <div className="text-yellow-300 font-bold animate-pulse">Combo {combo}x</div>}
       </div>
 
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white">🎯 单词消消乐</h1>
-        <p className="text-white/80">配对单词和图片 ({matched.length}/{words.length})</p>
+        <h1 className="text-3xl font-bold text-white">Matching Game</h1>
+        <p className="text-white/80">Match words with images ({matched.length}/{words.length})</p>
       </div>
 
       <div className="card">
-        <h3 className="text-lg font-bold mb-3 text-center">📝 点击单词</h3>
+        <h3 className="text-lg font-bold mb-3 text-center">Click Words</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {words.map((w) => (
             <button key={"w-"+w.word} onClick={() => handleWord(w)} disabled={matched.includes(w.word)}
@@ -74,7 +75,7 @@ function MatchingGame({ theme, onComplete, onBack }) {
       </div>
 
       <div className="card">
-        <h3 className="text-lg font-bold mb-3 text-center">🎨 点击图片</h3>
+        <h3 className="text-lg font-bold mb-3 text-center">Click Images</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[...words].sort(() => Math.random() - 0.5).map((w) => (
             <button key={"e-"+w.word} onClick={() => handleEmoji(w)} disabled={matched.includes(w.word)}

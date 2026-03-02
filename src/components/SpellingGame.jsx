@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { wordThemes, getRandomWords } from "../data/words";
 
-function SpellingGame({ theme, onComplete, onBack }) {
+function SpellingGame({ theme, onComplete, onBack, getRandomWords }) {
   const [words, setWords] = useState([]);
   const [index, setIndex] = useState(0);
   const [letters, setLetters] = useState([]);
@@ -10,8 +9,10 @@ function SpellingGame({ theme, onComplete, onBack }) {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    setWords(getRandomWords(10, theme));
-  }, [theme]);
+    if (getRandomWords) {
+      setWords(getRandomWords(10, theme));
+    }
+  }, [theme, getRandomWords]);
 
   useEffect(() => {
     if (words[index]) {
@@ -21,7 +22,7 @@ function SpellingGame({ theme, onComplete, onBack }) {
   }, [words, index]);
 
   const current = words[index];
-  if (!current) return <div className="text-white text-center text-2xl">加载中...</div>;
+  if (!current) return <div className="text-white text-center text-2xl">Loading...</div>;
 
   const addLetter = (letter, i) => {
     setAnswer([...answer, letter]);
@@ -55,13 +56,13 @@ function SpellingGame({ theme, onComplete, onBack }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">← 返回</button>
-        <div className="text-white font-bold text-xl">✨ {score} 分</div>
-        <div className="text-white/80">第 {index + 1}/{words.length} 题</div>
+        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">Back</button>
+        <div className="text-white font-bold text-xl">Score: {score}</div>
+        <div className="text-white/80">Word {index + 1}/{words.length}</div>
       </div>
 
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white">✨ 拼写挑战</h1>
+        <h1 className="text-3xl font-bold text-white">Spelling Challenge</h1>
       </div>
 
       <div className="card text-center">
@@ -71,7 +72,7 @@ function SpellingGame({ theme, onComplete, onBack }) {
       </div>
 
       <div className="card">
-        <h3 className="text-lg font-bold mb-3 text-center">你的答案:</h3>
+        <h3 className="text-lg font-bold mb-3 text-center">Your Answer:</h3>
         <div className="flex justify-center gap-2 min-h-[50px] flex-wrap">
           {answer.map((l, i) => (
             <button key={i} onClick={() => removeLetter(i)}
@@ -83,7 +84,7 @@ function SpellingGame({ theme, onComplete, onBack }) {
       </div>
 
       <div className="card">
-        <h3 className="text-lg font-bold mb-3 text-center">点击字母:</h3>
+        <h3 className="text-lg font-bold mb-3 text-center">Click Letters:</h3>
         <div className="flex justify-center gap-2 flex-wrap">
           {letters.map((l, i) => (
             <button key={i} onClick={() => addLetter(l, i)}
@@ -96,7 +97,7 @@ function SpellingGame({ theme, onComplete, onBack }) {
 
       {answer.length === current.word.length && (
         <button onClick={check} className="w-full py-4 bg-yellow-400 text-gray-800 font-bold text-xl rounded-2xl shadow-lg hover:bg-yellow-500">
-          ✓ 检查答案
+          Check Answer
         </button>
       )}
     </div>
