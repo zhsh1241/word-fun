@@ -24,3 +24,6 @@ npm-debug.log*
 # Test
 *.cjs
 coverage/
+
+# Test files (keep in repo but ignore future changes)
+# *.cjs
