@@ -57,7 +57,12 @@ function App() {
           />
         )}
         {page === "game" && renderGame()}
-        {page === "library" && <WordLibrary onBack={() => setPage("home")} />}
+        {page === "library" && (
+          <WordLibrary
+            onBack={() => setPage("home")}
+            selectedBook={selectedBook}
+          />
+        )}
       </div>
 
       {/* 底部导航 */}
