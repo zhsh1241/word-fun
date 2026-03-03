@@ -44,49 +44,114 @@ function MatchingGame({ theme, onComplete, onBack, getRandomWords }) {
     }
   };
 
-  if (!words.length) return <div className="text-white text-center text-2xl">Loading...</div>;
+  if (!words.length) return (
+    <div className="text-center py-20">
+      <div className="text-6xl mb-4">🔄</div>
+      <div className="text-white text-2xl font-bold mb-2">正在加载...</div>
+      <div className="text-white/70">马上就开始！</div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <button onClick={onBack} className="bg-white/20 text-white px-4 py-2 rounded-xl">Back</button>
-        <div className="text-white font-bold text-xl">Score: {score}</div>
-        {combo > 1 && <div className="text-yellow-300 font-bold animate-pulse">Combo {combo}x</div>}
+      {/* 顶部信息栏 */}
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 flex justify-between items-center border-2 border-white/20">
+        <button 
+          onClick={onBack} 
+          className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+        >
+          ◀ 返回首页
+        </button>
+        <div className="flex items-center gap-4">
+          <div className="text-white font-bold text-xl">
+            <span className="text-yellow-300">💰</span> {score} 分
+          </div>
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl font-bold">
+            进度: {matched.length}/{words.length}
+          </div>
+        </div>
+        {combo > 1 && (
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-xl font-bold animate-pulse text-xl">
+            🔥 {combo} 连击!
+          </div>
+        )}
       </div>
 
+      {/* 游戏标题区域 */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white">Matching Game</h1>
-        <p className="text-white/80">Match words with images ({matched.length}/{words.length})</p>
+        <h1 className="text-4xl font-bold text-white mb-3">🎯 单词消消乐</h1>
+        <p className="text-white/90 text-lg">
+          先点击一个单词，然后点击对应的图片来消除它们！
+        </p>
+        {matched.length === 0 && (
+          <div className="mt-4 bg-blue-400/30 text-blue-100 px-4 py-2 rounded-xl inline-block text-sm">
+            💡 提示：先记住单词和图片，然后开始配对！
+          </div>
+        )}
       </div>
 
-      <div className="card">
-        <h3 className="text-lg font-bold mb-3 text-center">Click Words</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {/* 单词选择区 */}
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border-2 border-white/20 shadow-xl">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-purple-500 text-white px-4 py-2 rounded-xl font-bold text-lg">
+            步骤1
+          </div>
+          <h3 className="text-xl font-bold text-white">点击选择一个单词</h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {words.map((w) => (
-            <button key={"w-"+w.word} onClick={() => handleWord(w)} disabled={matched.includes(w.word)}
-              className={"p-4 rounded-xl font-bold text-lg transition-all " + (matched.includes(w.word)
-                ? "bg-gray-200 text-gray-400 line-through"
-                : selectedWord?.word === w.word ? "bg-purple-400 text-white scale-105"
-                : "bg-purple-100 hover:bg-purple-200 text-purple-800")}>
+            <button 
+              key={"w-"+w.word} 
+              onClick={() => handleWord(w)} 
+              disabled={matched.includes(w.word)}
+              className={`p-5 rounded-2xl font-bold text-lg transition-all duration-300 ${
+                matched.includes(w.word)
+                  ? "bg-gray-300/50 text-gray-400 line-through cursor-not-allowed"
+                  : selectedWord?.word === w.word 
+                    ? "bg-gradient-to-br from-purple-500 to-pink-500 text-white scale-105 shadow-2xl"
+                    : "bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-200 hover:to-purple-300 text-purple-800 hover:scale-105 shadow-lg"
+              }`}
+            >
               {w.word}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="text-lg font-bold mb-3 text-center">Click Images</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {/* 图片选择区 */}
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border-2 border-white/20 shadow-xl">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-bold text-lg">
+            步骤2
+          </div>
+          <h3 className="text-xl font-bold text-white">点击对应的图片</h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[...words].sort(() => Math.random() - 0.5).map((w) => (
-            <button key={"e-"+w.word} onClick={() => handleEmoji(w)} disabled={matched.includes(w.word)}
-              className={"p-4 rounded-xl text-4xl transition-all " + (matched.includes(w.word)
-                ? "bg-gray-200 opacity-50" : selectedEmoji?.word === w.word
-                ? "bg-yellow-200 scale-105" : "bg-yellow-50 hover:bg-yellow-100")}>
+            <button 
+              key={"e-"+w.word} 
+              onClick={() => handleEmoji(w)} 
+              disabled={matched.includes(w.word)}
+              className={`p-5 rounded-2xl text-5xl transition-all duration-300 ${
+                matched.includes(w.word)
+                  ? "bg-gray-300/50 opacity-40 cursor-not-allowed"
+                  : selectedEmoji?.word === w.word
+                    ? "bg-gradient-to-br from-yellow-400 to-orange-400 scale-105 shadow-2xl"
+                    : "bg-gradient-to-br from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100 hover:scale-105 shadow-lg"
+              }`}
+            >
               {w.emoji}
             </button>
           ))}
         </div>
       </div>
+
+      {/* 完成提示 */}
+      {matched.length === words.length && (
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-center py-6 rounded-3xl text-2xl font-bold animate-bounce">
+          🎉 太棒了！你完成了！
+        </div>
+      )}
     </div>
   );
 }
